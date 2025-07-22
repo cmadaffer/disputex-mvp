@@ -1,2 +1,2 @@
-# Disputex MVP
-AI-powered chargeback defense platform.
+# Disputex
+AI-Powered Chargeback Defense Platform
