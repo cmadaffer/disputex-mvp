@@ -28,55 +28,82 @@ export default function Home() {
   }
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'Arial, sans-serif', maxWidth: '700px', margin: 'auto' }}>
-      <h1 style={{ textAlign: 'center', fontSize: '2.5rem' }}>Disputex</h1>
-      <p style={{ textAlign: 'center', fontSize: '1.2rem', color: '#555' }}>
-        Never lose another dollar to chargebacks.
-      </p>
-      <p style={{ textAlign: 'center', fontSize: '1rem', marginBottom: '2rem', color: '#666' }}>
-        Disputex defends your business from revenue loss using AI-powered dispute letters and evidence.
-      </p>
+    <div style={{ fontFamily: 'Arial, sans-serif' }}>
+      <section style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1605902711622-cfb43c4437d3?auto=format&fit=crop&w=1470&q=80)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white',
+        padding: '6rem 2rem',
+        position: 'relative'
+      }}>
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          zIndex: 1
+        }}></div>
 
-      <section style={{ margin: '3rem 0', padding: '1.5rem', border: '1px solid #ddd', borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
-        <h2>📌 What is Disputex?</h2>
-        <p>
-          An AI-powered chargeback defense platform that automates the creation of bank-compliant dispute letters, collects evidence,
-          and helps you win back lost revenue with zero hassle. Ideal for eCommerce, SaaS, and subscription merchants.
-        </p>
+        <div style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          maxWidth: '1100px',
+          margin: '0 auto',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ maxWidth: '550px' }}>
+            <h1 style={{ fontSize: '2.8rem', lineHeight: '1.2', marginBottom: '1rem' }}>
+              Never lose another dollar to chargebacks.
+            </h1>
+            <p style={{ fontSize: '1.2rem' }}>
+              Disputex defends your business from revenue loss using AI-powered dispute letters and evidence.
+            </p>
+          </div>
 
-        <h2 style={{ marginTop: '2rem' }}>🛠 How it Works</h2>
-        <ul>
-          <li>Upload your dispute data or integrate via API</li>
-          <li>Our system auto-generates compliant response packets</li>
-          <li>You review and submit — faster and more accurately</li>
-        </ul>
-
-        <h2 style={{ marginTop: '2rem' }}>💡 Why It Works</h2>
-        <ul>
-          <li>Built with Visa CE 3.0 & Mastercard rules in mind</li>
-          <li>AI-trained templates = higher win rates</li>
-          <li>Full automation from evidence to letter creation</li>
-        </ul>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '10px',
+            color: '#333',
+            maxWidth: '350px',
+            width: '100%',
+            boxShadow: '0 0 20px rgba(0,0,0,0.15)',
+            marginTop: '2rem'
+          }}>
+            <h3 style={{ marginBottom: '1rem' }}>Get Early Access</h3>
+            <form onSubmit={handleWaitlistSubmit}>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', marginBottom: '1rem', borderRadius: '4px', border: '1px solid #ccc' }}
+              />
+              <button type="submit" style={{
+                width: '100%',
+                padding: '0.75rem',
+                fontSize: '1rem',
+                backgroundColor: '#FF6F00',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}>
+                Protect My Revenue
+              </button>
+            </form>
+            {submitted && <p style={{ color: 'green', marginTop: '1rem' }}>✅ You’ve been added to the waitlist.</p>}
+            {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
+            <p style={{ fontSize: '0.85rem', marginTop: '1rem', textAlign: 'center', color: '#666' }}>
+              ✅ Join 230+ businesses
+            </p>
+          </div>
+        </div>
       </section>
-
-      <section style={{ marginTop: '3rem', textAlign: 'center' }}>
-        <h2>🚀 Get Early Access to Disputex</h2>
-        <form onSubmit={handleWaitlistSubmit} style={{ marginTop: '1rem' }}>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            style={{ padding: '0.5rem', width: '60%', fontSize: '1rem' }}
-          />
-          <button type="submit" style={{ marginLeft: '1rem', padding: '0.5rem 1rem', fontSize: '1rem', backgroundColor: '#FF6F00', color: 'white', border: 'none', borderRadius: '4px' }}>
-            Join Waitlist
-          </button>
-        </form>
-        {submitted && <p style={{ color: 'green', marginTop: '1rem' }}>✅ You’ve been added to the waitlist.</p>}
-        {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
-      </section>
-    </main>
+    </div>
   );
 }
