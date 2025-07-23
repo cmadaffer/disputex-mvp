@@ -30,7 +30,7 @@ export default function Home() {
   return (
     <div style={{ fontFamily: 'Arial, sans-serif' }}>
       <section style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1605902711622-cfb43c4437d3?auto=format&fit=crop&w=1470&q=80)',
+        backgroundImage: 'url(/background.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         color: 'white',
