@@ -40,13 +40,24 @@ export default function Dashboard() {
     setGeneratedLetter('')
 
     const prompt = `
-Generate a professional chargeback dispute letter. Include:
-- Reason Code: ${formData.reasonCode}
-- Merchant Name: ${formData.merchantName}
-- Amount: $${formData.amount}
-- Description: ${formData.description}
+You are generating a formal merchant response to a credit card chargeback submitted by a cardholder.
 
-Make it concise, persuasive, and formatted for Visa/Mastercard reviewers.
+Instructions:
+- Speak from the merchant’s perspective.
+- Address the letter to the card issuer or acquiring bank.
+- Maintain a formal, professional tone.
+- Include all required transaction information and a concise summary of facts.
+- Reference evidence (e.g., delivery confirmation, signed agreements, correspondence).
+- Comply with card network dispute procedures (Visa, Mastercard, Amex, Discover).
+- Do NOT offer legal advice. This is not a legal notice.
+
+Context:
+- Chargeback Reason Code: ${formData.reasonCode}
+- Merchant Name: ${formData.merchantName}
+- Disputed Amount: $${formData.amount}
+- Merchant Explanation: ${formData.description}
+
+Generate a persuasive letter that clearly shows the transaction was valid and fulfilled. Emphasize evidence, timelines, and rebut the cardholder’s claims with facts. Keep it concise but powerful.
     `.trim()
 
     const res = await fetch('/api/generate-letter', {
@@ -71,7 +82,7 @@ Make it concise, persuasive, and formatted for Visa/Mastercard reviewers.
         <input name="reasonCode" placeholder="Reason Code" onChange={handleChange} required />
         <input name="merchantName" placeholder="Merchant Name" onChange={handleChange} required />
         <input name="amount" placeholder="Amount" type="number" onChange={handleChange} required />
-        <textarea name="description" placeholder="Description" onChange={handleChange} required />
+        <textarea name="description" placeholder="Merchant Explanation" onChange={handleChange} required />
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate Letter'}
         </button>
@@ -88,4 +99,3 @@ Make it concise, persuasive, and formatted for Visa/Mastercard reviewers.
     </div>
   )
 }
-
