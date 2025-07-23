@@ -1,81 +1,83 @@
-
 import { useState } from 'react';
 
 export default function Home() {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [description, setDescription] = useState('');
+  const [result, setResult] = useState('');
+  const [score, setScore] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
-  const [aiResponse, setAIResponse] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e) {
+  async function handleWaitlistSubmit(e) {
     e.preventDefault();
-    setSubmitted(false);
     setError('');
-    setAIResponse('');
-    setLoading(true);
-
+    setSubmitted(false);
     try {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, message })
+        body: JSON.stringify({ email })
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Submission failed');
-
-      // Simulate AI reply
-      const fakeAI = `Dear card issuer,\n\nWe are submitting a response regarding the dispute associated with the transaction described by the customer: "${message}".\n\nOur systems confirm the charge was valid and authorized by the user. Documentation is attached.\n\nSincerely,\nDisputex AI Defense Engine`;
-
-      setAIResponse(fakeAI);
-      setSubmitted(true);
-      setEmail('');
-      setMessage('');
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        setError(data.error || 'Submission failed.');
+      }
     } catch (err) {
-      setError(err.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+      console.error(err);
+      setError('An unexpected error occurred.');
     }
   }
 
+  async function handleLetterGenerate() {
+    const res = await fetch('/api/generate-dispute-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description })
+    });
+    const data = await res.json();
+    setResult(data.letter);
+    setScore(data.confidence);
+  }
+
   return (
-    <main style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: 600, margin: 'auto' }}>
+    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <h1>Disputex</h1>
       <p>AI-Powered Chargeback Defense Platform</p>
 
-      <form onSubmit={handleSubmit} style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <form onSubmit={handleWaitlistSubmit} style={{ marginTop: '2rem' }}>
         <input
           type="email"
-          placeholder="Your email"
+          placeholder="Enter your email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           required
         />
-        <textarea
-          placeholder="Describe your dispute (e.g., I was billed twice for the same item...)"
-          value={message}
-          onChange={e => setMessage(e.target.value)}
-          rows={5}
-          required
-        />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Submitting...' : 'Generate Dispute Letter'}
-        </button>
-        {submitted && <p style={{ color: 'green' }}>✅ Email saved. Letter generated below.</p>}
-        {error && <p style={{ color: 'red' }}>❌ {error}</p>}
+        <button type="submit">Join Waitlist</button>
       </form>
+      {submitted && <p style={{ color: 'green' }}>✅ You’ve been added to the waitlist.</p>}
+      {error && <p style={{ color: 'red' }}>❌ {error}</p>}
 
-      {aiResponse && (
-        <section style={{ marginTop: '2rem', whiteSpace: 'pre-wrap', background: '#f3f3f3', padding: '1rem', borderRadius: '6px' }}>
-          <h3>Your AI-Generated Response:</h3>
-          <p>{aiResponse}</p>
-          <button style={{ marginTop: '1rem' }} onClick={() => alert('PDF export coming soon!')}>
-            📄 Download PDF
-          </button>
-        </section>
+      <hr style={{ margin: '3rem 0' }} />
+
+      <h2>Generate Dispute Letter</h2>
+      <textarea
+        rows={6}
+        cols={60}
+        placeholder="Describe your chargeback issue..."
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+      />
+      <br />
+      <button onClick={handleLetterGenerate}>Generate Letter</button>
+
+      {result && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3>Generated Letter</h3>
+          <pre>{result}</pre>
+          <p><strong>Confidence Score:</strong> {score}</p>
+        </div>
       )}
     </main>
   );
-}
