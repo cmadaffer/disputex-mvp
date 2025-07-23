@@ -1,4 +1,4 @@
-  import { useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
   const [email, setEmail] = useState('');
@@ -90,3 +90,4 @@ export default function Home() {
       </section>
     </main>
   );
+)
