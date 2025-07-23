@@ -18,7 +18,7 @@ export default function Home() {
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: '#f5f5f5',
-          padding: '20px',
+          padding: '40px',
         }}
       >
         <Image
@@ -33,6 +33,48 @@ export default function Home() {
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
           }}
         />
+
+        <div style={{ marginTop: '40px', textAlign: 'center', width: '100%', maxWidth: '600px' }}>
+          <form
+            action="https://YOUR_SUPABASE_ENDPOINT_HERE" // Replace this with your actual form handler
+            method="POST"
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              style={{
+                padding: '16px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                border: '1px solid #ccc',
+                width: '100%',
+              }}
+            />
+
+            <button
+              type="submit"
+              style={{
+                padding: '16px',
+                fontSize: '16px',
+                borderRadius: '8px',
+                backgroundColor: '#000',
+                color: '#fff',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+            >
+              Request Early Access
+            </button>
+          </form>
+        </div>
       </main>
     </>
   );
