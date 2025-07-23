@@ -1,9 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   async function handleWaitlistSubmit(e) {
     e.preventDefault();
@@ -38,20 +46,20 @@ export default function Home() {
       backgroundRepeat: 'no-repeat',
       height: '100vh',
       width: '100vw',
-      position: 'relative'
+      display: 'flex',
+      justifyContent: isMobile ? 'center' : 'flex-end',
+      alignItems: isMobile ? 'flex-end' : 'center',
+      padding: isMobile ? '1rem' : '2rem',
+      boxSizing: 'border-box'
     }}>
       <div style={{
-        position: 'absolute',
-        bottom: '2rem',
-        left: '50%',
-        transform: 'translateX(-50%)',
         backgroundColor: 'rgba(0,0,0,0.75)',
         padding: '2rem',
         borderRadius: '12px',
-        width: '90%',
-        maxWidth: '360px',
+        width: isMobile ? '100%' : '360px',
         textAlign: 'center',
-        boxShadow: '0 0 20px rgba(0,0,0,0.3)'
+        boxShadow: '0 0 20px rgba(0,0,0,0.3)',
+        marginBottom: isMobile ? '1rem' : '0'
       }}>
         <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem', color: '#fff' }}>Get Early Access</h2>
         <form onSubmit={handleWaitlistSubmit}>
