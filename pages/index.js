@@ -28,29 +28,30 @@ export default function Home() {
   }
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ fontFamily: 'Arial, sans-serif', margin: 0, padding: 0 }}>
       <section style={{
         backgroundImage: 'url(/background.jpg)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        color: 'white',
-        padding: '6rem 2rem',
-        position: 'relative',
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'top left',
+        backgroundColor: '#002244',
         height: '100vh',
         display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        padding: '2rem',
+        boxSizing: 'border-box'
       }}>
         <div style={{
-          backgroundColor: 'rgba(0,0,0,0.65)',
+          backgroundColor: 'rgba(0,0,0,0.75)',
           padding: '2rem',
-          borderRadius: '10px',
-          maxWidth: '400px',
+          borderRadius: '12px',
+          maxWidth: '340px',
           width: '100%',
           textAlign: 'center',
-          boxShadow: '0 0 30px rgba(0,0,0,0.4)'
+          boxShadow: '0 0 20px rgba(0,0,0,0.3)'
         }}>
-          <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Get Early Access</h2>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem', color: '#fff' }}>Get Early Access</h2>
           <form onSubmit={handleWaitlistSubmit}>
             <input
               type="email"
@@ -58,7 +59,14 @@ export default function Home() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
-              style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', marginBottom: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                fontSize: '1rem',
+                marginBottom: '1rem',
+                borderRadius: '4px',
+                border: '1px solid #ccc'
+              }}
             />
             <button type="submit" style={{
               width: '100%',
@@ -75,7 +83,7 @@ export default function Home() {
           </form>
           {submitted && <p style={{ color: 'lightgreen', marginTop: '1rem' }}>✅ You’ve been added to the waitlist.</p>}
           {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
-          <p style={{ fontSize: '0.85rem', marginTop: '1rem', color: '#bbb' }}>
+          <p style={{ fontSize: '0.85rem', marginTop: '1rem', color: '#ccc' }}>
             ✅ Join 230+ businesses
           </p>
         </div>
