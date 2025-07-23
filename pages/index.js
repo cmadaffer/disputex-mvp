@@ -38,7 +38,7 @@ export default function Home() {
       <div style={{ fontFamily: 'Arial, sans-serif' }}>
         <section
           style={{
-            backgroundImage: backgroundImage: "url('https://disputex-public.s3.us-east-2.amazonaws.com/disputex-hero.png')",
+            backgroundImage: "url('https://disputex-public.s3.us-east-2.amazonaws.com/disputex-hero.png')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             color: 'white',
