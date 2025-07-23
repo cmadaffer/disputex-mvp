@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Head from 'next/head';
 
 export default function Home() {
   const [email, setEmail] = useState('');
@@ -14,7 +13,7 @@ export default function Home() {
       const res = await fetch('/api/waitlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email })
       });
       const data = await res.json();
       if (res.ok) {
@@ -29,113 +28,58 @@ export default function Home() {
   }
 
   return (
-    <>
-      <Head>
-        <title>Disputex – AI Chargeback Defense</title>
-        <meta name="description" content="Disputex automatically defends your business from revenue loss using AI." />
-      </Head>
-
-      <div style={{ fontFamily: 'Arial, sans-serif' }}>
-        <section
-          style={{
-            backgroundImage: "url('https://disputex-public.s3.us-east-2.amazonaws.com/disputex-hero.png')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            color: 'white',
-            padding: '6rem 2rem',
-            position: 'relative',
-          }}
-        >
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0,0,0,0.4)',
-              zIndex: 1,
-            }}
-          ></div>
-
-          <div
-            style={{
-              position: 'relative',
-              zIndex: 2,
-              display: 'flex',
-              maxWidth: '1100px',
-              margin: '0 auto',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <div style={{ maxWidth: '550px' }}>
-              <h1 style={{ fontSize: '2.8rem', lineHeight: '1.2', marginBottom: '1rem' }}>
-                Never lose another dollar to chargebacks.
-              </h1>
-              <p style={{ fontSize: '1.2rem' }}>
-                Disputex defends your business from revenue loss using AI-powered dispute letters and evidence.
-              </p>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: 'white',
-                padding: '2rem',
-                borderRadius: '10px',
-                color: '#333',
-                maxWidth: '350px',
-                width: '100%',
-                boxShadow: '0 0 20px rgba(0,0,0,0.15)',
-                marginTop: '2rem',
-              }}
-            >
-              <h3 style={{ marginBottom: '1rem' }}>Get Early Access</h3>
-              <form onSubmit={handleWaitlistSubmit}>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    fontSize: '1rem',
-                    marginBottom: '1rem',
-                    borderRadius: '4px',
-                    border: '1px solid #ccc',
-                  }}
-                />
-                <button
-                  type="submit"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    fontSize: '1rem',
-                    backgroundColor: '#000',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  Request Early Access
-                </button>
-              </form>
-              {submitted && (
-                <p style={{ color: 'green', marginTop: '1rem' }}>
-                  Thank you! You’ve been added to the waitlist.
-                </p>
-              )}
-              {error && (
-                <p style={{ color: 'red', marginTop: '1rem' }}>{error}</p>
-              )}
-            </div>
-          </div>
-        </section>
-      </div>
-    </>
+    <div style={{ fontFamily: 'Arial, sans-serif' }}>
+      <section style={{
+        backgroundImage: 'url(/background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        color: 'white',
+        padding: '6rem 2rem',
+        position: 'relative',
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          padding: '2rem',
+          borderRadius: '10px',
+          maxWidth: '400px',
+          width: '100%',
+          textAlign: 'center',
+          boxShadow: '0 0 30px rgba(0,0,0,0.4)'
+        }}>
+          <h2 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>Get Early Access</h2>
+          <form onSubmit={handleWaitlistSubmit}>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              style={{ width: '100%', padding: '0.75rem', fontSize: '1rem', marginBottom: '1rem', borderRadius: '5px', border: '1px solid #ccc' }}
+            />
+            <button type="submit" style={{
+              width: '100%',
+              padding: '0.75rem',
+              fontSize: '1rem',
+              backgroundColor: '#FF6F00',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}>
+              Protect My Revenue
+            </button>
+          </form>
+          {submitted && <p style={{ color: 'lightgreen', marginTop: '1rem' }}>✅ You’ve been added to the waitlist.</p>}
+          {error && <p style={{ color: 'red', marginTop: '1rem' }}>❌ {error}</p>}
+          <p style={{ fontSize: '0.85rem', marginTop: '1rem', color: '#bbb' }}>
+            ✅ Join 230+ businesses
+          </p>
+        </div>
+      </section>
+    </div>
   );
 }
