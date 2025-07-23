@@ -11,6 +11,8 @@ export default function Dashboard() {
     amount: '',
     description: '',
   })
+  const [file, setFile] = useState(null)
+  const [evidenceURL, setEvidenceURL] = useState('')
   const [generatedLetter, setGeneratedLetter] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -32,6 +34,26 @@ export default function Dashboard() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleFileUpload = async (e) => {
+    const uploadedFile = e.target.files[0]
+    if (!uploadedFile) return
+
+    const filePath = `${user.id}/${Date.now()}_${uploadedFile.name}`
+    const { data, error } = await supabase.storage
+      .from('evidence-files')
+      .upload(filePath, uploadedFile)
+
+    if (error) {
+      alert('Error uploading file')
+      console.error(error)
+    } else {
+      const { data: urlData } = supabase.storage
+        .from('evidence-files')
+        .getPublicUrl(filePath)
+      setEvidenceURL(urlData.publicUrl)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -56,6 +78,7 @@ Context:
 - Merchant Name: ${formData.merchantName}
 - Disputed Amount: $${formData.amount}
 - Merchant Explanation: ${formData.description}
+- Uploaded Evidence Link: ${evidenceURL || 'No file uploaded'}
 
 Generate a persuasive letter that clearly shows the transaction was valid and fulfilled. Emphasize evidence, timelines, and rebut the cardholder’s claims with facts. Keep it concise but powerful.
     `.trim()
@@ -83,6 +106,12 @@ Generate a persuasive letter that clearly shows the transaction was valid and fu
         <input name="merchantName" placeholder="Merchant Name" onChange={handleChange} required />
         <input name="amount" placeholder="Amount" type="number" onChange={handleChange} required />
         <textarea name="description" placeholder="Merchant Explanation" onChange={handleChange} required />
+
+        <p><strong>Attach Evidence File (PDF, image, etc):</strong></p>
+        <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} />
+
+        {evidenceURL && <p>Uploaded File: <a href={evidenceURL} target="_blank">{evidenceURL}</a></p>}
+
         <button type="submit" disabled={loading}>
           {loading ? 'Generating...' : 'Generate Letter'}
         </button>
