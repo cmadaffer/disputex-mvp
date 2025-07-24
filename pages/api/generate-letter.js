@@ -1,19 +1,17 @@
-// pages/api/generate-letter.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { prompt } = req.body;
+  const { prompt } = req.body
 
   if (!prompt) {
-    return res.status(400).json({ error: 'Missing prompt' });
+    return res.status(400).json({ error: 'Missing prompt' })
   }
 
-  const apiKey = process.env.OPEN_AI_KEY;
-
+  const apiKey = process.env.OPEN_AI_KEY
   if (!apiKey) {
-    return res.status(500).json({ error: 'OpenAI API key not set' });
+    return res.status(500).json({ error: 'OpenAI API key not set' })
   }
 
   try {
@@ -28,12 +26,12 @@ export default async function handler(req, res) {
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
       }),
-    });
+    })
 
-    const json = await openaiRes.json();
-    const result = json.choices?.[0]?.message?.content || 'Error generating response';
-    res.status(200).json({ result });
+    const json = await openaiRes.json()
+    const result = json.choices?.[0]?.message?.content || 'Error generating response'
+    res.status(200).json({ result })
   } catch (err) {
-    res.status(500).json({ error: 'Error contacting OpenAI' });
+    res.status(500).json({ error: 'Error contacting OpenAI' })
   }
 }
