@@ -10,8 +10,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing prompt' })
   }
 
-  const apiKey = process.env.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
-  if (!apiKey) {
+  const apiKey = process.env.OPEN_AI_KEY;
     return res.status(500).json({ error: 'OpenAI API key not set' })
   }
 
