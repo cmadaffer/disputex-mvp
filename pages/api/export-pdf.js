@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import PDFDocument from 'pdfkit';
 import stream from 'stream';
-import { promisify } from 'util';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -40,7 +39,3 @@ export default async function handler(req, res) {
         }
       });
     });
-
-    const { letterContent, userEmail } = body;
-    if (!letterContent || !userEmail) {
-      return res.status(400).json({ error: 'Missing letterContent or userEmail' });
