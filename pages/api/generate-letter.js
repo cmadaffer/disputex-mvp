@@ -3,47 +3,52 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { chargebackType, merchantName, amount, evidence } = req.body;
+  const { chargebackType, merchantName, amount, evidence } = req.body
 
   if (!chargebackType || !merchantName || !amount || !evidence) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ error: 'Missing required fields' })
   }
 
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
-    return res.status(500).json({ error: 'OpenAI API key not set' });
+    return res.status(500).json({ error: 'OpenAI API key not set' })
   }
 
   try {
     const prompt = `
-You are an expert chargeback response assistant for merchants. Write a formal, persuasive dispute response for the following:
+You are a professional chargeback dispute assistant.
 
+Write a rebuttal letter from a merchant for a credit card chargeback.
+
+Details:
 - Reason: ${chargebackType}
 - Merchant: ${merchantName}
 - Amount: $${amount}
-- Supporting Evidence: ${evidence}
+- Evidence Summary: ${evidence}
 
-Keep the tone professional, cite evidence clearly, and do not include legal advice.
-    `.trim();
+Use a professional, formal tone.
+Do not include legal advice. Use language familiar to Visa, Mastercard, Amex and Discover processors.
+    `.trim()
 
-    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
         model: 'gpt-4o',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
-      }),
-    });
+        temperature: 0.4
+      })
+    })
 
-    const json = await openaiRes.json();
-    const letter = json.choices?.[0]?.message?.content || 'Error generating response';
-    res.status(200).json({ letter });
-  } catch (err) {
-    console.error('OpenAI Error:', err);
-    res.status(500).json({ error: 'Failed to contact OpenAI' });
+    const json = await response.json()
+    const letter = json.choices?.[0]?.message?.content || 'No content returned from OpenAI'
+
+    res.status(200).json({ letter })
+  } catch (error) {
+    console.error('OpenAI Error:', error)
+    res.status(500).json({ error: 'Failed to contact OpenAI' })
   }
 }
