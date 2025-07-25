@@ -1,14 +1,9 @@
-// pages/api/login.js
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_KEY
-);
+// /pages/api/login.js
+import supabase from '../../lib/supabaseClient';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   const { email, password } = req.body;
@@ -22,5 +17,5 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: error.message });
   }
 
-  res.status(200).json({ user: data.user });
+  return res.status(200).json({ user: data.user });
 }
