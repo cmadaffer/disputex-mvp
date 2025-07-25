@@ -15,6 +15,7 @@ export default async function handler(req, res) {
     const margin = 40
     const pageWidth = 600
     const pageHeight = 800
+    const maxLineWidth = pageWidth - margin * 2
     let y = pageHeight - margin
 
     const addPage = () => {
@@ -34,17 +35,33 @@ EVIDENCE FILE:
 ${evidenceURL || 'No file uploaded.'}
     `.trim()
 
-    const lines = fullText.split('\n')
-    for (const line of lines) {
-      if (y < margin) page = addPage()
-      page.drawText(line.trim(), {
-        x: margin,
-        y,
-        size: fontSize,
-        font,
-        color: rgb(0, 0, 0)
-      })
-      y -= lineHeight
+    const paragraphs = fullText.split('\n')
+
+    for (const para of paragraphs) {
+      const words = para.split(' ')
+      let line = ''
+
+      for (const word of words) {
+        const testLine = line + word + ' '
+        const width = font.widthOfTextAtSize(testLine, fontSize)
+
+        if (width > maxLineWidth) {
+          if (y < margin) page = addPage()
+          page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) })
+          y -= lineHeight
+          line = word + ' '
+        } else {
+          line = testLine
+        }
+      }
+
+      if (line.trim()) {
+        if (y < margin) page = addPage()
+        page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) })
+        y -= lineHeight
+      }
+
+      y -= lineHeight // extra space between paragraphs
     }
 
     const pdfBytes = await pdfDoc.save()
