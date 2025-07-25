@@ -1,10 +1,16 @@
-import '../styles/globals.css';
+// pages/_app.js
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 import { SessionContextProvider } from '@supabase/auth-helpers-react';
 import { useState } from 'react';
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import '../styles/globals.css';
 
-function MyApp({ Component, pageProps }) {
-  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
+export default function MyApp({ Component, pageProps }) {
+  const [supabaseClient] = useState(() =>
+    createPagesBrowserClient({
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_KEY,
+    })
+  );
 
   return (
     <SessionContextProvider supabaseClient={supabaseClient}>
@@ -12,5 +18,3 @@ function MyApp({ Component, pageProps }) {
     </SessionContextProvider>
   );
 }
-
-export default MyApp;
