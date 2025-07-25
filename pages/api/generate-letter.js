@@ -26,8 +26,7 @@ Details:
 - Amount: $${amount}
 - Evidence Summary: ${evidence}
 
-Use a professional, formal tone.
-Do not include legal advice. Use language familiar to Visa, Mastercard, Amex and Discover processors.
+Use a professional, formal tone. No legal advice. Visa/Mastercard-safe.
     `.trim()
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
