@@ -1,28 +1,17 @@
-import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import { useRouter } from 'next/router'
-import '../styles/globals.css'
+// /pages/_app.js
+import { useState } from 'react';
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { SessionContextProvider } from '@supabase/auth-helpers-react';
+import '../styles/globals.css';
 
-export default function MyApp({ Component, pageProps }) {
-  const [session, setSession] = useState(null)
-  const router = useRouter()
+function MyApp({ Component, pageProps }) {
+  const [supabaseClient] = useState(() => createBrowserSupabaseClient());
 
-  useEffect(() => {
-    // Get current session
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-    })
-
-    // Listen for login/logout changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session) router.push('/dashboard')
-    })
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
-  }, [])
-
-  return <Component {...pageProps} session={session} />
+  return (
+    <SessionContextProvider supabaseClient={supabaseClient}>
+      <Component {...pageProps} />
+    </SessionContextProvider>
+  );
 }
+
+export default MyApp;
