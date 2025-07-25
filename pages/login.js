@@ -1,21 +1,46 @@
-// /pages/api/login.js
-import supabase from '../../lib/supabaseClient';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import supabase from '../lib/supabaseClient';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
-  const { email, password } = req.body;
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setError(error.message);
+    } else {
+      router.push('/dashboard');
+    }
+  };
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return res.status(401).json({ error: error.message });
-  }
-
-  return res.status(200).json({ user: data.user });
+  return (
+    <div style={{ padding: '2rem' }}>
+      <h1>Log In</h1>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <br /><br />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          required
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <br /><br />
+        <button type="submit">Login</button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+      </form>
+    </div>
+  );
 }
