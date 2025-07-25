@@ -1,25 +1,25 @@
-// pages/signup.js
-
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_KEY
-);
+const supabaseUrl = 'https://epwfjgumxrhfapuglvac.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwd2ZqZ3VteHJoZmFwdWdsdmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzI5MjMsImV4cCI6MjA2ODgwODkyM30.x5WAirS8kqBeuDZN7QBZikFvWqMZEt1A8jRqR2akjyY';
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const router = useRouter();
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -27,7 +27,10 @@ export default function Signup() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      router.push('/dashboard');
+      setSuccessMsg('Account created! Check your email to confirm.');
+      setTimeout(() => {
+        router.push('/login');
+      }, 3000);
     }
   };
 
@@ -35,23 +38,18 @@ export default function Signup() {
     <div style={{ padding: '2rem' }}>
       <h1>Sign Up</h1>
       <form onSubmit={handleSignup}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        /><br />
-        <button type="submit">Sign Up</button>
-      </form>
-      {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
-    </div>
-  );
-}
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            value={
