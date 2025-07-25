@@ -52,4 +52,16 @@ export default function Signup() {
           <input
             type="password"
             placeholder="Password"
-            value={
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
+          />
+        </div>
+        <button type="submit">Sign Up</button>
+        {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+        {successMsg && <p style={{ color: 'green' }}>{successMsg}</p>}
+      </form>
+    </div>
+  );
+}
