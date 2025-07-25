@@ -1,29 +1,30 @@
-// pages/api/export-pdf.js
-
 import PDFDocument from 'pdfkit';
-import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req, res) {
   try {
+    // Set headers so browser knows it's a downloadable PDF
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=sample_test.pdf');
+
+    // Create a new PDF document
     const doc = new PDFDocument();
-    const chunks = [];
 
-    doc.on('data', (chunk) => chunks.push(chunk));
-    doc.on('end', () => {
-      const pdfBuffer = Buffer.concat(chunks);
-      res.writeHead(200, {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': 'attachment; filename="dispute_letter.pdf"',
-        'Content-Length': pdfBuffer.length
-      });
-      res.end(pdfBuffer); // << critical fix
+    // Pipe the PDF into the response
+    doc.pipe(res);
+
+    // Write content into PDF
+    doc.fontSize(20).text('Disputex PDF Test File', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(14).text('This is a basic PDF test from Disputex to verify Supabase download + browser compatibility.', {
+      align: 'left',
     });
+    doc.moveDown();
+    doc.text('Date: ' + new Date().toLocaleString());
 
-    // Dummy content — replace later
-    doc.fontSize(24).text('Test PDF: This file was streamed correctly.');
+    // End the PDF stream
     doc.end();
   } catch (error) {
-    console.error('PDF stream error:', error);
-    res.status(500).json({ error: 'PDF export failed' });
+    console.error('PDF generation error:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
