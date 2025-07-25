@@ -1,66 +1,54 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
-import Link from 'next/link';
+import { supabase } from '../utils/supabaseClient';
 
-const supabaseUrl = 'https://epwfjgumxrhfapuglvac.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVwd2ZqZ3VteHJoZmFwdWdsdmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyMzI5MjMsImV4cCI6MjA2ODgwODkyM30.x5WAirS8kqBeuDZN7QBZikFvWqMZEt1A8jRqR2akjyY';
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-export default function Login() {
+export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  const handleLogin = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
 
     if (error) {
-      setErrorMsg(error.message);
+      setError(error.message);
     } else {
       router.push('/dashboard');
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Log In</h1>
-      <form onSubmit={handleLogin}>
-        <div>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-          />
-        </div>
-        <div>
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ marginBottom: '1rem', padding: '0.5rem', width: '100%' }}
-          />
-        </div>
-        <button type="submit">Login</button>
-        {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '2rem', textAlign: 'center' }}>
+      <h1>Sign Up</h1>
+      <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ padding: '0.5rem', fontSize: '16px' }}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ padding: '0.5rem', fontSize: '16px' }}
+        />
+        <button type="submit" style={{ padding: '0.75rem', fontSize: '16px', cursor: 'pointer' }}>
+          Create Account
+        </button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
-
-      <div style={{ marginTop: '1rem' }}>
-        <p>Don't have an account? <Link href="/signup">Sign Up</Link></p>
-      </div>
     </div>
   );
 }
