@@ -1,75 +1,74 @@
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+// pages/api/export-pdf.js
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import fetch from 'node-fetch';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Only POST allowed' })
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { letter, evidenceURL } = req.body
+  const { letter, evidenceURL } = req.body || {};
+  if (!letter) return res.status(400).json({ error: 'Letter content is required' });
 
   try {
-    const pdfDoc = await PDFDocument.create()
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontSize = 12
-    const lineHeight = 18
-    const margin = 40
-    const pageWidth = 600
-    const pageHeight = 800
-    const maxLineWidth = pageWidth - margin * 2
-    let y = pageHeight - margin
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    const textWidth = page.getWidth() - 100;
+    const wrappedText = wrapText(letter, font, fontSize, textWidth);
+    const textHeight = fontSize * 1.2;
 
-    const addPage = () => {
-      const page = pdfDoc.addPage([pageWidth, pageHeight])
-      y = pageHeight - margin
-      return page
+    let y = page.getHeight() - 50;
+    wrappedText.forEach((line) => {
+      if (y < 50) {
+        y = page.getHeight() - 50;
+        pdfDoc.addPage();
+        page.drawText(line, { x: 50, y, size: fontSize, font, color: rgb(0, 0, 0) });
+      } else {
+        page.drawText(line, { x: 50, y, size: fontSize, font, color: rgb(0, 0, 0) });
+      }
+      y -= textHeight;
+    });
+
+    // Append uploaded evidence file
+    if (evidenceURL) {
+      const response = await fetch(evidenceURL);
+      const fileBytes = await response.arrayBuffer();
+      const ext = evidenceURL.split('.').pop();
+
+      if (ext === 'pdf') {
+        const externalDoc = await PDFDocument.load(fileBytes);
+        const copiedPages = await pdfDoc.copyPages(externalDoc, externalDoc.getPageIndices());
+        copiedPages.forEach((p) => pdfDoc.addPage(p));
+      } else {
+        const img = await pdfDoc.embedJpg(fileBytes);
+        const imgPage = pdfDoc.addPage([img.width, img.height]);
+        imgPage.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+      }
     }
 
-    let page = addPage()
-
-    const fullText = `
-CHARGEBACK DISPUTE LETTER
-
-${letter}
-
-EVIDENCE FILE:
-${evidenceURL || 'No file uploaded.'}
-    `.trim()
-
-    const paragraphs = fullText.split('\n')
-
-    for (const para of paragraphs) {
-      const words = para.split(' ')
-      let line = ''
-
-      for (const word of words) {
-        const testLine = line + word + ' '
-        const width = font.widthOfTextAtSize(testLine, fontSize)
-
-        if (width > maxLineWidth) {
-          if (y < margin) page = addPage()
-          page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) })
-          y -= lineHeight
-          line = word + ' '
-        } else {
-          line = testLine
-        }
-      }
-
-      if (line.trim()) {
-        if (y < margin) page = addPage()
-        page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) })
-        y -= lineHeight
-      }
-
-      y -= lineHeight
-    }
-
-    const pdfBytes = await pdfDoc.save()
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf')
-    res.send(Buffer.from(pdfBytes))
-  } catch (error) {
-    console.error('PDF Error:', error)
-    res.status(500).json({ error: 'PDF generation failed' })
+    const pdfBytes = await pdfDoc.save();
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf');
+    res.send(Buffer.from(pdfBytes));
+  } catch (err) {
+    console.error('PDF error:', err);
+    return res.status(500).json({ error: 'Failed to export PDF' });
   }
+}
+
+function wrapText(text, font, size, maxWidth) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (let word of words) {
+    const newLine = line + word + ' ';
+    if (font.widthOfTextAtSize(newLine, size) > maxWidth) {
+      lines.push(line);
+      line = word + ' ';
+    } else {
+      line = newLine;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
 }
