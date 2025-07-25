@@ -12,6 +12,7 @@
     "react-dom": "latest",
     "@supabase/supabase-js": "latest",
     "pdf-lib": "latest",
-    "openai": "latest"
+    "openai": "latest",
+    "node-fetch": "^3.3.2"
   }
 }
