@@ -61,7 +61,7 @@ ${evidenceURL || 'No file uploaded.'}
         y -= lineHeight
       }
 
-      y -= lineHeight // extra space between paragraphs
+      y -= lineHeight
     }
 
     const pdfBytes = await pdfDoc.save()
@@ -69,7 +69,7 @@ ${evidenceURL || 'No file uploaded.'}
     res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf')
     res.send(Buffer.from(pdfBytes))
   } catch (error) {
-    console.error('PDF Export Error:', error)
-    res.status(500).json({ error: 'Failed to generate PDF' })
+    console.error('PDF Error:', error)
+    res.status(500).json({ error: 'PDF generation failed' })
   }
 }
