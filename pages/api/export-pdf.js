@@ -1,82 +1,58 @@
 import { createClient } from '@supabase/supabase-js';
-import PDFDocument from 'pdfkit';
-import stream from 'stream';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-const streamToBuffer = async (readableStream) => {
-  const chunks = [];
-  for await (const chunk of readableStream) {
-    chunks.push(chunk);
-  }
-  return Buffer.concat(chunks);
-};
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const { letterContent, userEmail } = req.body;
+
+  if (!letterContent || !userEmail) {
+    return res.status(400).json({ error: 'Missing letterContent or userEmail' });
   }
 
   try {
-    const body = await new Promise((resolve, reject) => {
-      const chunks = [];
-      req.on('data', chunk => chunks.push(chunk));
-      req.on('end', () => {
-        try {
-          const data = JSON.parse(Buffer.concat(chunks).toString());
-          resolve(data);
-        } catch (err) {
-          reject(err);
-        }
-      });
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([600, 750]);
+    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+
+    page.drawText(letterContent, {
+      x: 50,
+      y: 700,
+      size: 12,
+      font: timesRomanFont,
+      color: rgb(0, 0, 0),
     });
 
-    const { letterContent, userEmail } = body;
+    const pdfBytes = await pdfDoc.save();
 
-    if (!letterContent || !userEmail) {
-      return res.status(400).json({ error: 'Missing letterContent or userEmail' });
-    }
+    const fileName = `dispute_letter_${Date.now()}.pdf`;
 
-    const doc = new PDFDocument();
-    const passThroughStream = new stream.PassThrough();
-    doc.pipe(passThroughStream);
-    doc.fontSize(12).text(letterContent, { align: 'left' });
-    doc.end();
-
-    const buffer = await streamToBuffer(passThroughStream);
-
-    const timestamp = Date.now();
-    const safeEmail = userEmail.replace(/[^a-zA-Z0-9]/g, '_');
-    const fileName = `letters/${safeEmail}_${timestamp}.pdf`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('letters')
-      .upload(fileName, buffer, {
+    const { data, error } = await supabase.storage
+      .from('pdfs')
+      .upload(fileName, Buffer.from(pdfBytes), {
         contentType: 'application/pdf',
         upsert: true,
       });
 
-    if (uploadError) {
-      console.error('Supabase Upload Error:', uploadError);
-      return res.status(500).json({ error: 'Failed to upload PDF' });
+    if (error) {
+      console.error('Supabase Upload Error:', error.message);
+      return res.status(500).json({ error: 'Upload to Supabase failed' });
     }
 
     const { data: publicUrlData } = supabase.storage
-      .from('letters')
+      .from('pdfs')
       .getPublicUrl(fileName);
 
     return res.status(200).json({ url: publicUrlData.publicUrl });
   } catch (err) {
-    console.error('PDF Export Error:', err);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    console.error('PDF Generation Error:', err);
+    return res.status(500).json({ error: 'PDF generation failed' });
   }
 }
