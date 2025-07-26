@@ -1,6 +1,5 @@
 // pages/api/generate-letter.js
-
-import { Configuration, OpenAIApi } from "openai";
+import { Configuration, OpenAIApi } from 'openai';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,37 +8,36 @@ export default async function handler(req, res) {
 
   const { email } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ error: 'Missing customer email' });
+  if (!process.env.OPENAI_API_KEY) {
+    return res.status(500).json({ error: 'OpenAI API key not set' });
   }
 
-  const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  const openai = new OpenAIApi(configuration);
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Invalid email provided' });
+  }
 
   try {
+    const configuration = new Configuration({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const openai = new OpenAIApi(configuration);
+
+    const prompt = `Write a formal and professional chargeback rebuttal letter from a merchant's perspective for a customer with the email ${email}. The letter should be persuasive, evidence-backed, and formatted according to Visa/Mastercard guidelines.`;
+
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: `You are a professional chargeback response assistant trained to generate high-quality, regulation-compliant merchant rebuttal letters for all major credit card providers (Visa, Mastercard, AmEx, Discover). Respond in formal business tone, from the merchant’s perspective.`,
-        },
-        {
-          role: "user",
-          content: `Generate a chargeback response letter for a customer with email: ${email}. This is a placeholder template; no sensitive data yet. Make it polite, persuasive, and structured for review by payment processors.`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 600,
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 800,
     });
 
     const letter = completion.data.choices[0].message.content;
+
     return res.status(200).json({ letter });
-  } catch (error) {
-    console.error('OpenAI Error:', error);
+  } catch (err) {
+    console.error('OpenAI Error:', err.response?.data || err.message);
     return res.status(500).json({ error: 'Failed to generate letter' });
   }
 }
+
