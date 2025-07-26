@@ -1,58 +1,38 @@
-// /pages/dashboard.js
-
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import { useRouter } from 'next/router';
-import axios from 'axios';
+import { createClientSupabaseClient } from '../lib/supabaseClient';
 
 export default function Dashboard() {
-  const router = useRouter();
-  const [session, setSession] = useState(null);
+  const supabase = createClientSupabaseClient();
+  const [email, setEmail] = useState('');
   const [letter, setLetter] = useState('');
-  const [reasonCode, setReasonCode] = useState('');
   const [evidenceURL, setEvidenceURL] = useState('');
-  const [pdfURL, setPdfURL] = useState('');
-  const [confidence, setConfidence] = useState(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const currentSession = supabase.auth.getSession().then(({ data }) => {
-      if (!data?.session) {
-        router.push('/login');
-      } else {
-        setSession(data.session);
-      }
-    });
-  }, []);
+  const [status, setStatus] = useState('');
+  const [pdfUrl, setPdfUrl] = useState('');
 
   const handleGenerateLetter = async () => {
-    setLoading(true);
-    const { data } = await axios.post('/api/generate-letter', { reasonCode });
-    setLetter(data.letter);
-    setConfidence(data.confidence);
-    setLoading(false);
-  };
-
-  const handleDownloadPDF = async () => {
-    const response = await axios.post(
-      '/api/export-pdf',
-      { letter, evidenceURL },
-      { responseType: 'blob' }
-    );
-
-    const blob = new Blob([response.data], { type: 'application/pdf' });
-    const url = window.URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'dispute-letter.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    setStatus('Generating letter...');
+    try {
+      const res = await fetch('/api/generate-letter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data?.letter) {
+        setLetter(data.letter);
+        setStatus('Letter generated.');
+      } else {
+        setStatus('Error generating letter.');
+      }
+    } catch (error) {
+      setStatus('Error generating letter.');
+    }
   };
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
+
     const { data, error } = await supabase.storage
       .from('evidence')
       .upload(`uploads/${file.name}`, file, {
@@ -68,10 +48,20 @@ export default function Dashboard() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    setStatus('Creating PDF...');
+    const res = await fetch('/api/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ letter, evidenceURL }),
+    });
+    if (!res.ok) return setStatus('PDF generation failed');
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    setPdfUrl(url);
+    setStatus('PDF ready for download');
+  };
+
   return (
     <div style={{ padding: '2rem' }}>
       <h1>Welcome to Your Dashboard</h1>
-
-      <input
-        type="text"
-        placeholder="E
