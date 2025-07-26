@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createClientSupabaseClient } from '../lib/supabaseClient';
 
 export default function Dashboard() {
@@ -25,6 +25,7 @@ export default function Dashboard() {
         setStatus('Error generating letter.');
       }
     } catch (error) {
+      console.error(error);
       setStatus('Error generating letter.');
     }
   };
@@ -33,6 +34,7 @@ export default function Dashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
+    setStatus('Uploading evidence...');
     const { data, error } = await supabase.storage
       .from('evidence')
       .upload(`uploads/${file.name}`, file, {
@@ -40,26 +42,41 @@ export default function Dashboard() {
         upsert: false,
       });
 
-    if (data) {
-      const { data: publicUrl } = supabase.storage
-        .from('evidence')
-        .getPublicUrl(data.path);
-      setEvidenceURL(publicUrl.publicUrl);
+    if (error) {
+      setStatus('Upload failed');
+      return;
     }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('evidence')
+      .getPublicUrl(data.path);
+    setEvidenceURL(publicUrlData.publicUrl);
+    setStatus('Evidence uploaded');
   };
 
   const handleDownloadPDF = async () => {
+    if (!letter) return setStatus('Generate a letter first');
     setStatus('Creating PDF...');
-    const res = await fetch('/api/export-pdf', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ letter, evidenceURL }),
-    });
-    if (!res.ok) return setStatus('PDF generation failed');
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-    setPdfUrl(url);
-    setStatus('PDF ready for download');
+    try {
+      const res = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ letter, evidenceURL }),
+      });
+
+      if (!res.ok) {
+        setStatus('PDF generation failed');
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      setPdfUrl(url);
+      setStatus('PDF ready for download');
+    } catch (error) {
+      console.error(error);
+      setStatus('PDF generation failed');
+    }
   };
 
   return (
@@ -90,25 +107,4 @@ export default function Dashboard() {
       <input type="file" onChange={handleUpload} />
       {evidenceURL && (
         <p>
-          📎 Evidence uploaded:{" "}
-          <a href={evidenceURL} target="_blank" rel="noopener noreferrer">
-            {evidenceURL}
-          </a>
-        </p>
-      )}
-
-      <button onClick={handleDownloadPDF} style={{ marginTop: '1rem' }}>
-        Download Letter + Evidence PDF
-      </button>
-
-      {pdfUrl && (
-        <p>
-          ✅ <a href={pdfUrl} download="dispute.pdf">Click here to download PDF</a>
-        </p>
-      )}
-
-      {status && <p>Status: {status}</p>}
-    </div>
-  );
-}
-
+          📎 Evidence uploaded:{' '}
