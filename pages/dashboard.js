@@ -65,3 +65,50 @@ export default function Dashboard() {
   return (
     <div style={{ padding: '2rem' }}>
       <h1>Welcome to Your Dashboard</h1>
+
+      <input
+        type="text"
+        placeholder="Enter customer email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ display: 'block', marginBottom: '1rem', width: '100%' }}
+      />
+
+      <button onClick={handleGenerateLetter} style={{ marginBottom: '1rem' }}>
+        Generate Letter
+      </button>
+
+      <textarea
+        rows="10"
+        cols="80"
+        value={letter}
+        onChange={(e) => setLetter(e.target.value)}
+        placeholder="Generated letter will appear here..."
+        style={{ display: 'block', marginBottom: '1rem', width: '100%' }}
+      />
+
+      <input type="file" onChange={handleUpload} />
+      {evidenceURL && (
+        <p>
+          📎 Evidence uploaded:{" "}
+          <a href={evidenceURL} target="_blank" rel="noopener noreferrer">
+            {evidenceURL}
+          </a>
+        </p>
+      )}
+
+      <button onClick={handleDownloadPDF} style={{ marginTop: '1rem' }}>
+        Download Letter + Evidence PDF
+      </button>
+
+      {pdfUrl && (
+        <p>
+          ✅ <a href={pdfUrl} download="dispute.pdf">Click here to download PDF</a>
+        </p>
+      )}
+
+      {status && <p>Status: {status}</p>}
+    </div>
+  );
+}
+
