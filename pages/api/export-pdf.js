@@ -1,3 +1,5 @@
+// /pages/api/export-pdf.js
+
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export default async function handler(req, res) {
@@ -6,52 +8,49 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { letter, evidenceText } = req.body;
+    const { letterContent } = req.body;
 
-    if (!letter) {
+    if (!letterContent) {
       return res.status(400).json({ error: 'Missing letter content' });
     }
 
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
     const fontSize = 12;
-    const lineHeight = fontSize + 4;
-    const margin = 50;
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    const drawTextBlock = (text, x, y) => {
-      const lines = text.split('\n');
-      lines.forEach((line, i) => {
-        page.drawText(line, {
-          x,
-          y: y - i * lineHeight,
+    const lines = letterContent.split('\n');
+    let y = height - 50;
+
+    for (const line of lines) {
+      if (y < 50) {
+        page.drawText('... PDF truncated due to page overflow ...', {
+          x: 50,
+          y,
           size: fontSize,
           font,
-          color: rgb(0, 0, 0),
+          color: rgb(1, 0, 0),
         });
+        break;
+      }
+      page.drawText(line, {
+        x: 50,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
       });
-    };
-
-    let currentY = 800;
-
-    drawTextBlock('Chargeback Response Letter:\n', margin, currentY);
-    currentY -= lineHeight * 2;
-    drawTextBlock(letter, margin, currentY);
-
-    if (evidenceText) {
-      currentY -= lineHeight * (letter.split('\n').length + 4);
-      drawTextBlock('\nAttached Evidence:\n', margin, currentY);
-      currentY -= lineHeight * 2;
-      drawTextBlock(evidenceText, margin, currentY);
+      y -= fontSize + 4;
     }
 
     const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=dispute-letter.pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf');
     res.status(200).send(Buffer.from(pdfBytes));
-  } catch (error) {
-    console.error('PDF generation error:', error);
+  } catch (err) {
+    console.error('PDF generation error:', err);
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
