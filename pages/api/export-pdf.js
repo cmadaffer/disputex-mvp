@@ -1,58 +1,58 @@
-import { createClient } from '@supabase/supabase-js';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { letterContent, userEmail } = req.body;
-
-  if (!letterContent || !userEmail) {
-    return res.status(400).json({ error: 'Missing letterContent or userEmail' });
-  }
-
   try {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 750]);
-    const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const { letter, evidenceText } = req.body;
 
-    page.drawText(letterContent, {
-      x: 50,
-      y: 700,
-      size: 12,
-      font: timesRomanFont,
-      color: rgb(0, 0, 0),
-    });
+    if (!letter) {
+      return res.status(400).json({ error: 'Missing letter content' });
+    }
+
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontSize = 12;
+    const lineHeight = fontSize + 4;
+    const margin = 50;
+
+    const drawTextBlock = (text, x, y) => {
+      const lines = text.split('\n');
+      lines.forEach((line, i) => {
+        page.drawText(line, {
+          x,
+          y: y - i * lineHeight,
+          size: fontSize,
+          font,
+          color: rgb(0, 0, 0),
+        });
+      });
+    };
+
+    let currentY = 800;
+
+    drawTextBlock('Chargeback Response Letter:\n', margin, currentY);
+    currentY -= lineHeight * 2;
+    drawTextBlock(letter, margin, currentY);
+
+    if (evidenceText) {
+      currentY -= lineHeight * (letter.split('\n').length + 4);
+      drawTextBlock('\nAttached Evidence:\n', margin, currentY);
+      currentY -= lineHeight * 2;
+      drawTextBlock(evidenceText, margin, currentY);
+    }
 
     const pdfBytes = await pdfDoc.save();
 
-    const fileName = `dispute_letter_${Date.now()}.pdf`;
-
-    const { data, error } = await supabase.storage
-      .from('pdfs')
-      .upload(fileName, Buffer.from(pdfBytes), {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-
-    if (error) {
-      console.error('Supabase Upload Error:', error.message);
-      return res.status(500).json({ error: 'Upload to Supabase failed' });
-    }
-
-    const { data: publicUrlData } = supabase.storage
-      .from('pdfs')
-      .getPublicUrl(fileName);
-
-    return res.status(200).json({ url: publicUrlData.publicUrl });
-  } catch (err) {
-    console.error('PDF Generation Error:', err);
-    return res.status(500).json({ error: 'PDF generation failed' });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=dispute-letter.pdf');
+    res.status(200).send(Buffer.from(pdfBytes));
+  } catch (error) {
+    console.error('PDF generation error:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
+
