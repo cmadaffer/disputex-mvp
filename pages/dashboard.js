@@ -108,3 +108,26 @@ export default function Dashboard() {
       {evidenceURL && (
         <p>
           📎 Evidence uploaded:{' '}
+          <a href={evidenceURL} target="_blank" rel="noreferrer">
+            {evidenceURL}
+          </a>
+        </p>
+      )}
+
+      <button onClick={handleDownloadPDF} style={{ marginTop: '1rem' }}>
+        Download Letter + Evidence PDF
+      </button>
+      {pdfUrl && (
+        <p>
+          ✅{' '}
+          <a href={pdfUrl} download="dispute.pdf">
+            Click here to download PDF
+          </a>
+        </p>
+      )}
+
+      {status && <p>Status: {status}</p>}
+    </div>
+  );
+}
+
