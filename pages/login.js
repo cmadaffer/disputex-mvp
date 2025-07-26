@@ -1,18 +1,27 @@
+// /pages/login.js
+
 import { useState } from 'react';
+import { createClientSupabaseClient } from '../lib/supabaseClient';
 import { useRouter } from 'next/router';
-import supabase from '../lib/supabaseClient';
 
 export default function LoginPage() {
+  const supabase = createClientSupabaseClient();
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const router = useRouter();
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setErrorMsg('');
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     if (error) {
-      setError(error.message);
+      setErrorMsg(error.message);
     } else {
       router.push('/dashboard');
     }
@@ -20,7 +29,7 @@ export default function LoginPage() {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>Log In</h1>
+      <h1>Login</h1>
       <form onSubmit={handleLogin}>
         <input
           type="email"
@@ -29,7 +38,7 @@ export default function LoginPage() {
           required
           onChange={(e) => setEmail(e.target.value)}
         />
-        <br /><br />
+        <br />
         <input
           type="password"
           placeholder="Password"
@@ -37,10 +46,10 @@ export default function LoginPage() {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
-        <br /><br />
-        <button type="submit">Login</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        <br />
+        <button type="submit">Log In</button>
       </form>
+      {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
     </div>
   );
 }
