@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { supabase } from '../utils/supabaseClient';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
+
+  const supabase = createPagesBrowserClient();
 
   const handleSignup = async (e) => {
     e.preventDefault();
