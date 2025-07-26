@@ -1,55 +1,56 @@
-// /pages/login.js
-
 import { useState } from 'react';
-import { createClientSupabaseClient } from '../lib/supabaseClient';
 import { useRouter } from 'next/router';
+import { createPagesBrowserClient } from '@supabase/auth-helpers-nextjs';
 
-export default function LoginPage() {
-  const supabase = createClientSupabaseClient();
-  const router = useRouter();
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  const supabase = createPagesBrowserClient();
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setErrorMsg('');
+    setError('');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      setErrorMsg(error.message);
+      setError(error.message);
     } else {
       router.push('/dashboard');
     }
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '2rem', textAlign: 'center' }}>
       <h1>Login</h1>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <input
           type="email"
           placeholder="Email"
           value={email}
-          required
           onChange={(e) => setEmail(e.target.value)}
+          required
+          style={{ padding: '0.5rem', fontSize: '16px' }}
         />
-        <br />
         <input
           type="password"
           placeholder="Password"
           value={password}
-          required
           onChange={(e) => setPassword(e.target.value)}
+          required
+          style={{ padding: '0.5rem', fontSize: '16px' }}
         />
-        <br />
-        <button type="submit">Log In</button>
+        <button type="submit" style={{ padding: '0.75rem', fontSize: '16px', cursor: 'pointer' }}>
+          Login
+        </button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
-      {errorMsg && <p style={{ color: 'red' }}>{errorMsg}</p>}
     </div>
   );
 }
