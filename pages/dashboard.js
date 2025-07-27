@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// pages/dashboard.js
+
+import { useEffect, useState } from 'react';
 import { createClientSupabaseClient } from '../lib/supabaseClient';
 
 export default function Dashboard() {
@@ -25,7 +27,6 @@ export default function Dashboard() {
         setStatus('Error generating letter.');
       }
     } catch (error) {
-      console.error(error);
       setStatus('Error generating letter.');
     }
   };
@@ -34,7 +35,6 @@ export default function Dashboard() {
     const file = e.target.files[0];
     if (!file) return;
 
-    setStatus('Uploading evidence...');
     const { data, error } = await supabase.storage
       .from('evidence')
       .upload(`uploads/${file.name}`, file, {
@@ -42,20 +42,15 @@ export default function Dashboard() {
         upsert: false,
       });
 
-    if (error) {
-      setStatus('Upload failed');
-      return;
+    if (data) {
+      const { data: publicUrl } = supabase.storage
+        .from('evidence')
+        .getPublicUrl(data.path);
+      setEvidenceURL(publicUrl.publicUrl);
     }
-
-    const { data: publicUrlData } = supabase.storage
-      .from('evidence')
-      .getPublicUrl(data.path);
-    setEvidenceURL(publicUrlData.publicUrl);
-    setStatus('Evidence uploaded');
   };
 
   const handleDownloadPDF = async () => {
-    if (!letter) return setStatus('Generate a letter first');
     setStatus('Creating PDF...');
     try {
       const res = await fetch('/api/export-pdf', {
@@ -63,18 +58,12 @@ export default function Dashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ letter, evidenceURL }),
       });
-
-      if (!res.ok) {
-        setStatus('PDF generation failed');
-        return;
-      }
-
+      if (!res.ok) return setStatus('PDF generation failed');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       setPdfUrl(url);
       setStatus('PDF ready for download');
-    } catch (error) {
-      console.error(error);
+    } catch {
       setStatus('PDF generation failed');
     }
   };
@@ -108,7 +97,7 @@ export default function Dashboard() {
       {evidenceURL && (
         <p>
           📎 Evidence uploaded:{' '}
-          <a href={evidenceURL} target="_blank" rel="noreferrer">
+          <a href={evidenceURL} target="_blank" rel="noopener noreferrer">
             {evidenceURL}
           </a>
         </p>
@@ -130,4 +119,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
