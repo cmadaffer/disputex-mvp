@@ -61,4 +61,36 @@ export default function Dashboard() {
   }
 
   async function handleDownloadPDF() {
-    const res = a
+    const res = await fetch('/api/export-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ letter, evidenceURL })
+    })
+    const blob = await res.blob()
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'dispute_letter.pdf'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  }
+
+  return (
+    <div style={{ padding: 30 }}>
+      <h1>Welcome to your dashboard</h1>
+      <p>You are logged in as: {user.email}</p>
+      <button onClick={handleLogout}>Logout</button>
+
+      <h2>Generate Dispute Letter</h2>
+      <input placeholder="Chargeback reason code" value={chargebackType} onChange={e => setChargebackType(e.target.value)} /><br />
+      <input placeholder="Merchant name" value={merchantName} onChange={e => setMerchantName(e.target.value)} /><br />
+      <input placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} /><br />
+      <textarea placeholder="Evidence summary" value={evidence} onChange={e => setEvidence(e.target.value)} /><br />
+      <input type="file" onChange={handleUpload} /><br /><br />
+      <button onClick={handleGenerate}>Generate Letter</button>
+      <pre>{letter}</pre>
+      {letter && <button onClick={handleDownloadPDF}>Download PDF</button>}
+    </div>
+  )
+}
