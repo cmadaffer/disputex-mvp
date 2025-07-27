@@ -8,8 +8,12 @@ export default async function handler(req, res) {
   try {
     const { letterText } = req.body;
 
+    if (!letterText || typeof letterText !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid letterText in request body' });
+    }
+
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([612, 792]); // Letter size
+    const page = pdfDoc.addPage([612, 792]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontSize = 12;
     const lineHeight = fontSize * 1.6;
@@ -17,7 +21,7 @@ export default async function handler(req, res) {
     const maxWidth = page.getWidth() - 2 * margin;
     let y = page.getHeight() - margin;
 
-    const paragraphs = letterText.split(/\n\s*\n/); // Paragraph breaks
+    const paragraphs = letterText.split(/\n\s*\n/);
 
     for (const para of paragraphs) {
       const words = para.trim().split(/\s+/);
@@ -41,18 +45,16 @@ export default async function handler(req, res) {
         y -= lineHeight;
       }
 
-      y -= lineHeight; // Add space between paragraphs
+      y -= lineHeight;
     }
 
     const pdfBytes = await pdfDoc.save();
-
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'inline; filename=dispute_letter.pdf');
-    res.end(pdfBytes); // ✅ Direct binary response — prevents corruption
+    res.end(pdfBytes);
   } catch (error) {
     console.error('PDF export failed:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
-
 
