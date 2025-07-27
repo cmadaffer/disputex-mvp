@@ -22,16 +22,28 @@ export default async function handler(req, res) {
       const testLine = line + word + ' ';
       const width = font.widthOfTextAtSize(testLine, fontSize);
       if (width > page.getWidth() - 2 * margin) {
-        page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
+        page.drawText(line, {
+          x: margin,
+          y,
+          size: fontSize,
+          font,
+          color: rgb(0, 0, 0),
+        });
         line = word + ' ';
-        y -= fontSize + 2; // TIGHT LINE HEIGHT
+        y -= fontSize + 2;
       } else {
         line = testLine;
       }
     }
 
     if (line) {
-      page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
     }
 
     const pdfBytes = await pdfDoc.save();
