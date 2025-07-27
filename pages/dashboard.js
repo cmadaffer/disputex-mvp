@@ -1,121 +1,64 @@
 // pages/dashboard.js
-
-import { useEffect, useState } from 'react';
-import { createClientSupabaseClient } from '../lib/supabaseClient';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
+import { supabase } from '../utils/supabaseClient'
 
 export default function Dashboard() {
-  const supabase = createClientSupabaseClient();
-  const [email, setEmail] = useState('');
-  const [letter, setLetter] = useState('');
-  const [evidenceURL, setEvidenceURL] = useState('');
-  const [status, setStatus] = useState('');
-  const [pdfUrl, setPdfUrl] = useState('');
+  const router = useRouter()
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [letter, setLetter] = useState('')
+  const [chargebackType, setChargebackType] = useState('')
+  const [merchantName, setMerchantName] = useState('')
+  const [amount, setAmount] = useState('')
+  const [evidence, setEvidence] = useState('')
+  const [evidenceURL, setEvidenceURL] = useState('')
 
-  const handleGenerateLetter = async () => {
-    setStatus('Generating letter...');
-    try {
-      const res = await fetch('/api/generate-letter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (data?.letter) {
-        setLetter(data.letter);
-        setStatus('Letter generated.');
-      } else {
-        setStatus('Error generating letter.');
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session?.user) router.push('/login')
+      else {
+        setUser(session.user)
+        setLoading(false)
       }
-    } catch (error) {
-      setStatus('Error generating letter.');
-    }
-  };
+    })
+  }, [])
 
-  const handleUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  if (loading) return <p>Loading...</p>
 
-    const { data, error } = await supabase.storage
-      .from('evidence')
-      .upload(`uploads/${file.name}`, file, {
-        cacheControl: '3600',
-        upsert: false,
-      });
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
 
-    if (data) {
-      const { data: publicUrl } = supabase.storage
-        .from('evidence')
-        .getPublicUrl(data.path);
-      setEvidenceURL(publicUrl.publicUrl);
-    }
-  };
+  async function handleUpload(e) {
+    const file = e.target.files[0]
+    if (!file || !user) return alert('No file or user.')
 
-  const handleDownloadPDF = async () => {
-    setStatus('Creating PDF...');
-    try {
-      const res = await fetch('/api/export-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ letter, evidenceURL }),
-      });
-      if (!res.ok) return setStatus('PDF generation failed');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      setPdfUrl(url);
-      setStatus('PDF ready for download');
-    } catch {
-      setStatus('PDF generation failed');
-    }
-  };
+    const { error } = await supabase.storage
+      .from('evidence-files')
+      .upload(`${user.id}/${file.name}`, file)
 
-  return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Welcome to Your Dashboard</h1>
+    if (error) return alert('Upload failed.')
 
-      <input
-        type="text"
-        placeholder="Enter customer email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        style={{ display: 'block', marginBottom: '1rem', width: '100%' }}
-      />
+    const { data: { publicUrl } } = supabase
+      .storage
+      .from('evidence-files')
+      .getPublicUrl(`${user.id}/${file.name}`)
 
-      <button onClick={handleGenerateLetter} style={{ marginBottom: '1rem' }}>
-        Generate Letter
-      </button>
+    setEvidenceURL(publicUrl)
+    alert('✅ File uploaded.')
+  }
 
-      <textarea
-        rows="10"
-        cols="80"
-        value={letter}
-        onChange={(e) => setLetter(e.target.value)}
-        placeholder="Generated letter will appear here..."
-        style={{ display: 'block', marginBottom: '1rem', width: '100%' }}
-      />
+  async function handleGenerate() {
+    const res = await fetch('/api/generate-letter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chargebackType, merchantName, amount, evidence, evidenceURL })
+    })
+    const data = await res.json()
+    setLetter(data.letter || 'Error generating letter.')
+  }
 
-      <input type="file" onChange={handleUpload} />
-      {evidenceURL && (
-        <p>
-          📎 Evidence uploaded:{' '}
-          <a href={evidenceURL} target="_blank" rel="noopener noreferrer">
-            {evidenceURL}
-          </a>
-        </p>
-      )}
-
-      <button onClick={handleDownloadPDF} style={{ marginTop: '1rem' }}>
-        Download Letter + Evidence PDF
-      </button>
-      {pdfUrl && (
-        <p>
-          ✅{' '}
-          <a href={pdfUrl} download="dispute.pdf">
-            Click here to download PDF
-          </a>
-        </p>
-      )}
-
-      {status && <p>Status: {status}</p>}
-    </div>
-  );
-}
+  async function handleDownloadPDF() {
+    const res = a
