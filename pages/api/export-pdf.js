@@ -6,7 +6,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { letterText } = req.body;
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks).toString();
+    const { letterText } = JSON.parse(body);
 
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([612, 792]);
