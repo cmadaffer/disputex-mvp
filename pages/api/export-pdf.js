@@ -1,26 +1,68 @@
-// pages/api/export-pdf.js
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
-
-  const { letter } = req.body || {};
-  if (!letter) return res.status(400).json({ error: 'Missing letter content' });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   try {
+    const { letterText } = req.body;
+
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage();
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    let page = pdfDoc.addPage();
+    const { width, height } = page.getSize();
+
     const fontSize = 12;
     const margin = 50;
-    const maxWidth = page.getWidth() - margin * 2;
-    const lineHeight = fontSize * 1.4;
+    const maxWidth = width - margin * 2;
 
-    const lines = wrapText(letter, font, fontSize, maxWidth);
-    let y = page.getHeight() - margin;
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    let y = height - margin;
+
+    function wrapText(text, font, fontSize, maxWidth) {
+      const paragraphs = text.split(/\n\s*\n/); // Split on double line breaks
+      const lines = [];
+
+      for (let para of paragraphs) {
+        const words = para.split(/\s+/);
+        let line = '';
+
+        for (let word of words) {
+          const testLine = line + word + ' ';
+          const testWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+          if (testWidth > maxWidth) {
+            lines.push(line.trim());
+            line = word + ' ';
+          } else {
+            line = testLine;
+          }
+        }
+
+        if (line.trim() !== '') {
+          lines.push(line.trim());
+        }
+
+        lines.push(''); // Add blank line between paragraphs
+      }
+
+      return lines;
+    }
+
+    const lines = wrapText(letterText, font, fontSize, maxWidth);
+    const lineHeight = fontSize * 1.6;
 
     for (let line of lines) {
-      if (y < margin) break;
+      if (y < margin + lineHeight) {
+        page = pdfDoc.addPage();
+        y = height - margin;
+      }
+
+      if (line === '') {
+        y -= lineHeight; // paragraph break
+        continue;
+      }
+
       page.drawText(line, {
         x: margin,
         y,
@@ -28,37 +70,18 @@ export default async function handler(req, res) {
         font,
         color: rgb(0, 0, 0),
       });
+
       y -= lineHeight;
     }
 
     const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename=dispute_letter.pdf');
-    res.setHeader('Content-Length', pdfBytes.length);
-    res.end(Buffer.from(pdfBytes), 'binary');
-  } catch (err) {
-    console.error('PDF generation error:', err);
-    res.status(500).json({ error: 'PDF generation failed' });
+    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf');
+    res.status(200).send(Buffer.from(pdfBytes));
+  } catch (error) {
+    console.error('PDF export error:', error);
+    res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
 
-function wrapText(text, font, fontSize, maxWidth) {
-  const words = text.split(/\s+/);
-  const lines = [];
-  let line = '';
-
-  for (let word of words) {
-    const testLine = line + word + ' ';
-    const width = font.widthOfTextAtSize(testLine, fontSize);
-    if (width > maxWidth) {
-      lines.push(line.trim());
-      line = word + ' ';
-    } else {
-      line = testLine;
-    }
-  }
-
-  if (line) lines.push(line.trim());
-  return lines;
-}
