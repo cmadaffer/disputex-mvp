@@ -8,44 +8,30 @@ export default async function handler(req, res) {
   try {
     const { letterText } = req.body;
 
-    if (!letterText || typeof letterText !== 'string') {
-      return res.status(400).json({ error: 'Missing or invalid letterText in request body' });
-    }
-
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([612, 792]);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontSize = 12;
-    const lineHeight = fontSize * 1.6;
     const margin = 50;
-    const maxWidth = page.getWidth() - 2 * margin;
     let y = page.getHeight() - margin;
 
-    const paragraphs = letterText.split(/\n\s*\n/);
+    const words = letterText.split(' ');
+    let line = '';
 
-    for (const para of paragraphs) {
-      const words = para.trim().split(/\s+/);
-      let line = '';
-
-      for (const word of words) {
-        const testLine = line + word + ' ';
-        const width = font.widthOfTextAtSize(testLine, fontSize);
-
-        if (width > maxWidth) {
-          page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
-          y -= lineHeight;
-          line = word + ' ';
-        } else {
-          line = testLine;
-        }
+    for (let word of words) {
+      const testLine = line + word + ' ';
+      const width = font.widthOfTextAtSize(testLine, fontSize);
+      if (width > page.getWidth() - 2 * margin) {
+        page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
+        line = word + ' ';
+        y -= fontSize + 2; // TIGHT LINE HEIGHT
+      } else {
+        line = testLine;
       }
+    }
 
-      if (line.trim()) {
-        page.drawText(line.trim(), { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
-        y -= lineHeight;
-      }
-
-      y -= lineHeight;
+    if (line) {
+      page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
     }
 
     const pdfBytes = await pdfDoc.save();
@@ -57,4 +43,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
-
