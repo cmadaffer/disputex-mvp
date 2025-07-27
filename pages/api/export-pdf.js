@@ -2,10 +2,10 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
   const { letter } = req.body || {};
-  if (!letter) return res.status(400).json({ error: 'Letter content is required' });
+  if (!letter) return res.status(400).json({ error: 'Missing letter content' });
 
   try {
     const pdfDoc = await PDFDocument.create();
@@ -13,43 +13,37 @@ export default async function handler(req, res) {
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontSize = 12;
     const margin = 50;
-    const textWidth = page.getWidth() - margin * 2;
-    const textHeight = fontSize * 1.2;
+    const maxWidth = page.getWidth() - margin * 2;
+    const lineHeight = fontSize * 1.4;
 
-    const wrappedText = wrapText(letter, font, fontSize, textWidth);
+    const lines = wrapText(letter, font, fontSize, maxWidth);
     let y = page.getHeight() - margin;
 
-    for (const line of wrappedText) {
-      if (y < margin) break; // skip overflow for now
+    for (let line of lines) {
+      if (y < margin) break; // skip overflow
       page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
-      y -= textHeight;
+      y -= lineHeight;
     }
 
     const pdfBytes = await pdfDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf');
-    res.send(Buffer.from(pdfBytes));
+    res.setHeader('Content-Disposition', 'inline; filename=dispute_letter.pdf');
+    res.setHeader('Content-Length', pdfBytes.length);
+    res.end(Buffer.from(pdfBytes), 'binary');
   } catch (err) {
-    console.error('PDF generation failed:', err);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('PDF generation error:', err);
+    res.status(500).json({ error: 'PDF generation failed' });
   }
 }
 
-function wrapText(text, font, size, maxWidth) {
-  const words = text.split(' ');
+function wrapText(text, font, fontSize, maxWidth) {
+  const words = text.split(/\s+/);
   const lines = [];
   let line = '';
 
-  for (const word of words) {
-    const newLine = line + word + ' ';
-    if (font.widthOfTextAtSize(newLine, size) > maxWidth) {
-      lines.push(line.trim());
-      line = word + ' ';
-    } else {
-      line = newLine;
-    }
-  }
-  if (line) lines.push(line.trim());
-  return lines;
-}
+  for (let word of words) {
+    const testLine = line + word + ' ';
+    const width = font.widthOfTextAtSize(testLine, fontSize);
+    if (width > maxWidth) {
+      l
