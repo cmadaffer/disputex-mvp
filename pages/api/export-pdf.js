@@ -20,8 +20,14 @@ export default async function handler(req, res) {
     let y = page.getHeight() - margin;
 
     for (let line of lines) {
-      if (y < margin) break; // skip overflow
-      page.drawText(line, { x: margin, y, size: fontSize, font, color: rgb(0, 0, 0) });
+      if (y < margin) break;
+      page.drawText(line, {
+        x: margin,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(0, 0, 0),
+      });
       y -= lineHeight;
     }
 
@@ -46,4 +52,13 @@ function wrapText(text, font, fontSize, maxWidth) {
     const testLine = line + word + ' ';
     const width = font.widthOfTextAtSize(testLine, fontSize);
     if (width > maxWidth) {
-      l
+      lines.push(line.trim());
+      line = word + ' ';
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line) lines.push(line.trim());
+  return lines;
+}
