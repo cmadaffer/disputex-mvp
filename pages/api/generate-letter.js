@@ -1,35 +1,38 @@
-import { Configuration, OpenAIApi } from 'openai';
+// pages/api/generate-letter.js
+import OpenAI from 'openai';
 
-const config = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-const openai = new OpenAIApi(config);
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Missing email' });
+  const { chargebackType, merchantName, amount, evidence, evidenceURL } = req.body || {};
+  if (!chargebackType || !merchantName || !amount || !evidence)
+    return res.status(400).json({ error: 'Missing required fields' });
 
   try {
-    const response = await openai.createChatCompletion({
-      model: 'gpt-4',
-      messages: [
-        {
-          role: 'user',
-          content: `Write a professional chargeback rebuttal letter for customer email: ${email}. Format according to Visa/Mastercard network tone and rules.`,
-        },
-      ],
-      temperature: 0.7,
-      max_tokens: 800,
+    const prompt = `
+You are a professional chargeback dispute assistant. Write a formal, persuasive rebuttal letter from the merchant's point of view, aligned with Visa/Mastercard/Amex/Discover expectations (no legal advice).
+
+Inputs:
+- Chargeback Reason: ${chargebackType}
+- Merchant: ${merchantName}
+- Amount: $${amount}
+- Evidence Summary: ${evidence}
+${evidenceURL ? `- Evidence File URL: ${evidenceURL}` : '- No evidence file URL provided'}
+
+Return only the letter body.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
     });
 
-    const letter = response.data.choices[0].message.content;
+    const letter = completion.choices?.[0]?.message?.content ?? 'No letter returned.';
     return res.status(200).json({ letter });
-  } catch (error) {
-    console.error('[OpenAI error]', error.response?.data || error.message);
-    return res.status(500).json({ error: 'Failed to generate letter' });
+  } catch (err) {
+    console.error('OpenAI Error:', err);
+    return res.status(500).json({ error: 'Failed to generate letter.' });
   }
 }
-
