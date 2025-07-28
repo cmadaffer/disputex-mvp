@@ -8,8 +8,12 @@ export default async function handler(req, res) {
   try {
     const { letterText } = req.body;
 
+    if (!letterText || typeof letterText !== 'string') {
+      return res.status(400).json({ error: 'Invalid letter text.' });
+    }
+
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([612, 792]);
+    const page = pdfDoc.addPage([612, 792]); // Standard Letter Size
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontSize = 12;
     const margin = 50;
@@ -47,12 +51,14 @@ export default async function handler(req, res) {
     }
 
     const pdfBytes = await pdfDoc.save();
+    const buffer = Buffer.from(pdfBytes);
+
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename=dispute_letter.pdf');
-    res.end(pdfBytes);
+    res.setHeader('Content-Disposition', 'attachment; filename=dispute_letter.pdf');
+    res.setHeader('Content-Length', buffer.length);
+    res.status(200).send(buffer);
   } catch (error) {
     console.error('PDF export failed:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
-
