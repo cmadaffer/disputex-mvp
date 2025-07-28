@@ -6,12 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
-    }
-    const body = Buffer.concat(chunks).toString();
-    const { letterText } = JSON.parse(body);
+    const { letterText } = req.body;
 
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([612, 792]);
@@ -60,3 +55,4 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 }
+
