@@ -1,43 +1,47 @@
 // pages/api/waitlist.js
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const { email } = req.body || {};
-    if (!email || !/.+@.+\..+/.test(email)) {
-      return res.status(400).json({ error: 'Invalid email' });
-    }
+    if (!email || !/.+@.+\..+/.test(email)) return res.status(400).json({ error: 'Invalid email' });
 
-    const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
+    const SERVICE_ROLE = process.env.SUPABASE_SERVICE_ROLE; // server-only secret
+    const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; // optional fallback
 
-    // If Supabase envs exist, try to save. If not, we just log and succeed.
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    // Only try to write if URL + some key exist
+    if (SUPABASE_URL && (SERVICE_ROLE || ANON)) {
       try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const key = SERVICE_ROLE || ANON;
+        // Insert via PostgREST — no npm packages required
+        const resp = await fetch(`${SUPABASE_URL}/rest/v1/waitlist`, {
+          method: 'POST',
+          headers: {
+            apikey: key,
+            authorization: `Bearer ${key}`,
+            'content-type': 'application/json',
+            prefer: 'return=representation'
+          },
+          body: JSON.stringify({ email /* created_at uses default now() */ })
+        });
 
-        // Table name: waitlist  (columns: id uuid default uuid_generate_v4(), email text unique, created_at timestamptz)
-        const { error } = await supabase
-          .from('waitlist')
-          .insert({ email, created_at: new Date().toISOString() });
-
-        if (error) throw error;
+        // If RLS blocks anon or table missing, swallow and still show success to the user
+        if (!resp.ok) {
+          const text = await resp.text();
+          console.error('Supabase waitlist insert failed:', resp.status, text);
+        }
       } catch (dbErr) {
-        console.error('Supabase insert failed (continuing anyway):', dbErr);
-        // We still succeed so your user never sees a failure.
+        console.error('Supabase insert error (continuing anyway):', dbErr);
       }
     } else {
-      console.log('Waitlist (no DB configured):', email);
+      console.log('Waitlist captured (no DB configured):', email);
     }
 
-    // Always return OK to keep UX smooth.
+    // Always OK for smooth UX
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Waitlist API error:', err);
-    // Still return OK so the user sees success instead of an error banner
     return res.status(200).json({ ok: true });
   }
 }
