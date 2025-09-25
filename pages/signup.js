@@ -1,54 +1,57 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import { supabase } from '../utils/supabaseClient';
+import Head from 'next/head'
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import { supabase } from '../utils/supabaseClient'
+import SiteLayout from '../components/SiteLayout'
+import styles from '../styles/Form.module.css'
 
 export default function Signup() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setError('');
+  async function handleSignup(event) {
+    event.preventDefault()
+    setError('')
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
+    const { error } = await supabase.auth.signUp({ email, password })
     if (error) {
-      setError(error.message);
+      setError(error.message)
     } else {
-      router.push('/dashboard');
+      router.push('/dashboard')
     }
-  };
+  }
 
   return (
-    <div style={{ maxWidth: '400px', margin: '100px auto', padding: '2rem', textAlign: 'center' }}>
-      <h1>Sign Up</h1>
-      <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          style={{ padding: '0.5rem', fontSize: '16px' }}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          style={{ padding: '0.5rem', fontSize: '16px' }}
-        />
-        <button type="submit" style={{ padding: '0.75rem', fontSize: '16px', cursor: 'pointer' }}>
-          Create Account
-        </button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-      </form>
-    </div>
-  );
+    <SiteLayout>
+      <Head>
+        <title>Sign up — Disputex</title>
+      </Head>
+      <section className={styles.page}>
+        <div className="container">
+          <form className={`${styles.card} ${styles.narrow}`} onSubmit={handleSignup}>
+            <header className={styles.header}>
+              <h1>Create an account</h1>
+              <p>Spin up a workspace to generate dispute packets and collaborate with your team.</p>
+            </header>
+            <div className={styles.field}>
+              <label>Email</label>
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            </div>
+            <div className={styles.field}>
+              <label>Password</label>
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+            </div>
+            <div className={styles.actions}>
+              <button type="submit" className={styles.primary}>
+                Create account
+              </button>
+              {error && <p className={styles.note} style={{ color: '#fca5a5' }}>{error}</p>}
+            </div>
+          </form>
+        </div>
+      </section>
+    </SiteLayout>
+  )
 }

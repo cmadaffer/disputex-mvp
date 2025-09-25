@@ -1,46 +1,56 @@
-import { useState } from 'react';
-import { useRouter } from 'next/router';
-import supabase from '../lib/supabaseClient';
+import Head from 'next/head'
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+import supabase from '../lib/supabaseClient'
+import SiteLayout from '../components/SiteLayout'
+import styles from '../styles/Form.module.css'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const router = useRouter();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  async function handleLogin(event) {
+    event.preventDefault()
+    setError('')
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError(error.message);
+      setError(error.message)
     } else {
-      router.push('/dashboard');
+      router.push('/dashboard')
     }
-  };
+  }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Log In</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          required
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <br /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          required
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <br /><br />
-        <button type="submit">Login</button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-      </form>
-    </div>
-  );
+    <SiteLayout>
+      <Head>
+        <title>Login — Disputex</title>
+      </Head>
+      <section className={styles.page}>
+        <div className="container">
+          <form className={`${styles.card} ${styles.narrow}`} onSubmit={handleLogin}>
+            <header className={styles.header}>
+              <h1>Client login</h1>
+              <p>Access dispute workspaces, evidence files, and submission history.</p>
+            </header>
+            <div className={styles.field}>
+              <label>Email</label>
+              <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+            </div>
+            <div className={styles.field}>
+              <label>Password</label>
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+            </div>
+            <div className={styles.actions}>
+              <button type="submit" className={styles.primary}>
+                Log in
+              </button>
+              {error && <p className={styles.note} style={{ color: '#fca5a5' }}>{error}</p>}
+            </div>
+          </form>
+        </div>
+      </section>
+    </SiteLayout>
+  )
 }

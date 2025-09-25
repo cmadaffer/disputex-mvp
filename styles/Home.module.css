@@ -1,0 +1,341 @@
+.hero {
+  padding: 6rem 0 4rem;
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(2rem, 6vw, 4rem);
+  align-items: center;
+}
+
+.heroContent {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.eyebrow {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
+}
+
+.title {
+  font-size: clamp(2.6rem, 4vw, 3.8rem);
+  margin: 0;
+  line-height: 1.04;
+  font-weight: 700;
+}
+
+.title span {
+  color: var(--accent-strong);
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 1.08rem;
+  max-width: 36ch;
+}
+
+.waitlist {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.waitlist input {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.65);
+  color: var(--text-primary);
+  padding: 0.85rem 1.1rem;
+}
+
+.waitlist button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  background: linear-gradient(120deg, #60a5fa, #38bdf8);
+  color: #031629;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 18px 34px rgba(14, 116, 144, 0.26);
+}
+
+.waitlist button:hover {
+  transform: translateY(-1px);
+}
+
+.support {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.heroExtras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.heroExtras a {
+  color: var(--accent-strong);
+  font-weight: 600;
+}
+
+.heroPanel {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-lg);
+  padding: 1.8rem;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 1.4rem;
+}
+
+.metricDeck {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.metricRow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.metric {
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(30, 41, 59, 0.55);
+  padding: 1rem;
+  text-align: center;
+}
+
+.metric strong {
+  display: block;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.metric span {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+
+.section {
+  padding: 0 0 5rem;
+}
+
+.sectionHeader {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+
+.featureCard {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.featureCard h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.featureCard p {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.processGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.4rem;
+}
+
+.stepCard {
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: var(--radius-md);
+  padding: 1.4rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stepBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(96, 165, 250, 0.18);
+  color: var(--accent-strong);
+  font-weight: 700;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+}
+
+.roiGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.field input {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
+  padding: 0.65rem 0.8rem;
+}
+
+.roiMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pill {
+  background: rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.1rem;
+  min-width: 180px;
+}
+
+.pill strong {
+  display: block;
+  font-size: 1.2rem;
+}
+
+.pill span {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.ctaRow a {
+  background: rgba(96, 165, 250, 0.16);
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
+  font-weight: 600;
+  color: var(--accent-strong);
+}
+
+.pricingCard {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  max-width: 520px;
+  display: grid;
+  gap: 1.4rem;
+}
+
+.priceList {
+  margin: 0;
+  padding-left: 1rem;
+  color: var(--text-soft);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.faqGrid {
+  display: grid;
+  gap: 1rem;
+  max-width: 720px;
+}
+
+.faqItem {
+  background: rgba(15, 23, 42, 0.58);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.2rem;
+}
+
+.faqItem summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.faqItem p {
+  color: var(--text-soft);
+  margin: 0.6rem 0 0;
+}
+
+@media (max-width: 1080px) {
+  .roiGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 920px) {
+  .heroInner {
+    grid-template-columns: 1fr;
+  }
+
+  .heroPanel {
+    order: -1;
+  }
+
+  .featureGrid,
+  .processGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .waitlist {
+    grid-template-columns: 1fr;
+  }
+
+  .metricRow,
+  .roiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .featureGrid,
+  .processGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .metricRow,
+  .roiGrid {
+    grid-template-columns: 1fr;
+  }
+}
