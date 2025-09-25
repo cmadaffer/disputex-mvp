@@ -1,0 +1,104 @@
+.page {
+  padding: 6rem 0 5rem;
+}
+
+.page > *:not(:last-child) {
+  margin-bottom: 1.5rem;
+}
+
+.header {
+  max-width: 520px;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.6rem);
+}
+
+.header p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: grid;
+  gap: 1.4rem;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45);
+}
+
+.narrow {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  color: var(--text-soft);
+}
+
+.field input,
+.field select,
+.field textarea {
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.6);
+  color: var(--text-primary);
+  padding: 0.7rem 0.8rem;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 140px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.primary {
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.6rem;
+  background: linear-gradient(120deg, #60a5fa, #38bdf8);
+  color: #031629;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 18px 34px rgba(14, 116, 144, 0.26);
+}
+
+.note {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .card {
+    padding: 1.5rem;
+  }
+}
